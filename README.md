@@ -1,4 +1,4 @@
-# DoseRAD2026 — Photon Dose Prediction on MRI
+# DoseRAD2026: Photon Dose Prediction on MRI
 
 Submission code for the photon/MRI task of the
 [DoseRAD2026 Grand Challenge](https://doserad2026.grand-challenge.org/):
@@ -6,23 +6,18 @@ predicting a 3D radiation dose distribution (Geant4 Monte Carlo ground
 truth) directly from a patient MRI volume and one VMAT control point's beam
 geometry, in place of running a full Monte Carlo simulation.
 
-The full write-up — architecture, training, and evaluation — is the
-companion LNCS report, [*A Beam-Conditioned 3D U-Net for Photon Dose
-Prediction on MRI*](paper/photon_dose_mr_lncs.pdf), included in this
-repository.
-
 ## Approach
 
-A 3D U-Net (5-level encoder/decoder, 16–32–64–128–256 channels, two residual
+A 3D U-Net (5-level encoder/decoder, 16-32-64-128-256 channels, two residual
 units per block, ~4.8M parameters, built on [MONAI](https://monai.io/)'s
-`UNet`) takes a two-channel input — an MRI volume and a ray-traced
-beam-path mask — and predicts a single-channel dose volume. This is the
-same architecture and beam encoder used for this team's photon/CT
-submission; only the imaging preprocessing changes for MRI, since MR
-intensity has no fixed cross-patient calibration the way CT's Hounsfield
-units do: each volume is normalized against its own 99th-percentile
-intensity (`NormalizeMR` in `src/data/transforms.py`), and the body mask
-comes from an empirically chosen intensity threshold (`BodyMaskMR`).
+`UNet`) takes a two-channel input, an MRI volume and a ray-traced beam-path
+mask, and predicts a single-channel dose volume. This is the same
+architecture and beam encoder used for this team's photon/CT submission;
+only the imaging preprocessing changes for MRI, since MR intensity has no
+fixed cross-patient calibration the way CT's Hounsfield units do: each
+volume is normalized against its own 99th-percentile intensity
+(`NormalizeMR` in `src/data/transforms.py`), and the body mask comes from
+an empirically chosen intensity threshold (`BodyMaskMR`).
 
 Training uses a masked high-dose MAE term aligned with the challenge's own
 scoring metric, plus body-masked and outside-body-masked L1 regularizers
@@ -33,11 +28,10 @@ mixed precision (`src/training/trainer.py`).
 
 ```
 src/                Data pipeline, beam encoder, model, losses, training loop, evaluation metrics
-scripts/             train.py, evaluate_cloud.py — training and evaluation entry points
+scripts/             train.py, evaluate_cloud.py: training and evaluation entry points
 configs/             Training config (beam type, modality, hyperparameters)
 app.py, process.py   Grand Challenge /health + /invoke submission server
 Dockerfile           Container build (root-level, for Grand Challenge's repo-linked build)
-paper/               LNCS algorithm-description report for this task
 ```
 
 ## Reproducing
