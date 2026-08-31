@@ -2,14 +2,14 @@
 
 Submission code for the photon/MRI task of the
 [DoseRAD2026 Grand Challenge](https://doserad2026.grand-challenge.org/):
-predicting a 3D radiation dose distribution (Geant4 Monte Carlo ground truth)
-directly from a patient MRI volume and one VMAT control point's beam
+predicting a 3D radiation dose distribution (Geant4 Monte Carlo ground
+truth) directly from a patient MRI volume and one VMAT control point's beam
 geometry, in place of running a full Monte Carlo simulation.
 
 The full write-up — architecture, training, and evaluation — is the
 companion LNCS report, [*A Beam-Conditioned 3D U-Net for Photon Dose
-Prediction on MRI*](https://github.com/JyothiSreeMasina/Doserad2026/blob/main/paper/photon_dose_mr_lncs.pdf),
-in the main project repository.
+Prediction on MRI*](paper/photon_dose_mr_lncs.pdf), included in this
+repository.
 
 ## Approach
 
@@ -33,9 +33,11 @@ mixed precision (`src/training/trainer.py`).
 
 ```
 src/                Data pipeline, beam encoder, model, losses, training loop, evaluation metrics
+scripts/             train.py, evaluate_cloud.py — training and evaluation entry points
 configs/             Training config (beam type, modality, hyperparameters)
 app.py, process.py   Grand Challenge /health + /invoke submission server
 Dockerfile           Container build (root-level, for Grand Challenge's repo-linked build)
+paper/               LNCS algorithm-description report for this task
 ```
 
 ## Reproducing
@@ -44,11 +46,15 @@ Dockerfile           Container build (root-level, for Grand Challenge's repo-lin
 pip install -r requirements.txt
 ```
 
-The `src/` package here is the same training/evaluation library used across
-this team's four DoseRAD2026 submissions; the training entry point
-(`scripts/train.py`) and evaluation harness (`scripts/evaluate_cloud.py`)
-live in the [main project repository](https://github.com/JyothiSreeMasina/Doserad2026),
-run against `configs/task2_photon_mr.yaml` from this repo.
+**Train:**
+```bash
+python scripts/train.py --config configs/task2_photon_mr.yaml
+```
+
+**Evaluate against local held-out patients:**
+```bash
+python scripts/evaluate_cloud.py --config configs/task2_photon_mr.yaml --checkpoint checkpoints/task2_photon_mr/best.pt
+```
 
 Training data (75 patients, paired CT + MRI + beam JSON + Geant4 beam-level
 dose) is released by the challenge organizers on
